@@ -1,0 +1,8 @@
+---
+syntax: shell
+tags:
+  - networking
+---
+# tcpdump on remote machine
+
+ssh user@host.example.com sudo tcpdump -l -i any -w - 'not port 22' > /tmp/file.pcap

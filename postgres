@@ -1,0 +1,41 @@
+---
+syntax: sql
+tags:
+  - postgres
+---
+
+-- timestamp in milliseconds
+
+select round(extract(epoch from (now() - '1 day'::interval))::numeric * 1000, 0);
+
+-- biggest tables
+select
+  schema
+  ,relname
+  ,path
+  ,pg_size_pretty(table_size)
+  ,pg_size_pretty(index_size)
+  ,reltuples
+  ,reloptions
+from (
+  select
+    pg_catalog.pg_namespace.nspname as schema
+    ,relname
+    ,pg_relation_filepath(pg_catalog.pg_namespace.nspname || '.' || relname) as path
+    ,pg_relation_size(pg_catalog.pg_class.oid) as table_size
+    ,pg_indexes_size(pg_catalog.pg_class.oid) as index_size
+    ,reltuples
+    ,reloptions
+  from pg_catalog.pg_class
+  join pg_catalog.pg_namespace ON relnamespace = pg_catalog.pg_namespace.oid
+  ) t
+where schema not like 'pg_%'
+order by table_size desc;
+
+-- purge data older than 1 day
+begin transaction;
+create table mytable_tmp as (select * from mytable where timestamp >= extract(epoch from (now() - '1 day'::interval))::numeric * 1000);
+truncate mytable;
+insert into mytable (select * from mytable_tmp);
+drop table mytable_tmp;
+commit;
