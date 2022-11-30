@@ -1,0 +1,31 @@
+---
+syntax: shell
+tags:
+  - ldap
+---
+
+# Dump configuration database
+
+slapcat -o ldif-wrap=no  -b cn=config
+
+# Dump default database
+
+slapcat -o ldif-wrap=no
+
+# Create OU
+
+cat <<EOF | ldapadd -x -W -D "cn=Manager,dc=example,dc=com"
+dn: ou=Group,dc=example,dc=com
+objectClass: top
+objectclass: organizationalunit
+EOF
+
+# Add user
+
+cat <<EOF | ldapadd -x -W -D "cn=Manager,dc=example,dc=com"
+dn: cn=username,ou=Group,dc=example,dc=com
+objectClass: simpleSecurityObject
+objectClass: organizationalRole
+description: My User
+userPassword: Password
+EOF
