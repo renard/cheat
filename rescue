@@ -1,0 +1,18 @@
+---
+syntax: shell
+tags:
+  - rescue
+---
+
+# rescue 1 drive
+# User -R and play with -c option as well
+ddrescue -f -n -vvvv -P4 -c 64 -r 1 -y /dev/sda sda.img sda.log
+
+
+# map rescued drive before mounting
+kpartx -v -a sda.img
+
+# mount either /dev/loopXpY or check /dev/mapper/dm-X
+
+# unmap rescued drive
+kpartx -v -d sda.img
